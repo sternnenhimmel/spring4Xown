@@ -2,8 +2,11 @@ package com.leon.spring.service;
 
 import com.leon.spring.dao.LoginLogDao;
 import com.leon.spring.dao.UserDao;
+import com.leon.spring.domain.LoginLog;
+import com.leon.spring.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by Liol on 24/10/2017.
@@ -21,6 +24,27 @@ public class UserService {
     @Autowired
     public void setLoginLogDao(LoginLogDao loginLogDao){
         this.loginLogDao=loginLogDao;
+    }
+
+    public boolean hasMatchUser(String userName, String password){
+        int matchCount = userDao.getMatchCount(userName,password);
+        return matchCount>0;
+    }
+
+    public User findUserByUserName(String userName){
+        return userDao.findUserByUserName(userName);
+    }
+
+    @Transactional
+    public void loginSuccess(User user){
+        user.setCredits(5+user.getCredits());
+        LoginLog loginLog=new LoginLog();
+        loginLog.setUserId(user.getUserId());
+        loginLog.setIp(user.getLastIp());
+        loginLog.setLoginDate(user.getLastVisit());
+
+        userDao.updateLoginInfo(user);
+        loginLogDao.insertLoginLog(loginLog);
     }
 
 
